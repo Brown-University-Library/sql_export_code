@@ -2,25 +2,44 @@
 Controller.
 """
 
+import logging, os
 import trio
 
-## initiate a mysql dump
+
+## set up logging ---------------------------------------------------
+level_dict = {
+    'debug': logging.DEBUG,
+    'info': logging.INFO,
+    }
+desired_level = level_dict[ os.environ.get('SQL_EXPORT__LOG_LEVEL', 'debug') ]
+logging.basicConfig( 
+    level=desired_level,
+    format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s', 
+    datefmt='%d/%b/%Y %H:%M:%S'
+    )
+log = logging.getLogger(__name__)
+log.debug( 'log set' )
 
 
-## evaluate if there have been any changes
-"""
-If some aspect of the dump contains a time-stamp, see if there's a way to determine whether the actual data has changed.
-"""
+async def main():
 
-## if the data has changed...
+    ## initiate a mysql dump
 
-    ## commit to repo-A
 
-    ## push to repo-A
+    ## evaluate if there have been any changes
+    """
+    If some aspect of the dump contains a time-stamp, see if there's a way to determine whether the actual data has changed.
+    """
 
-    ## commit to repo-B
+    ## if the data has changed...
 
-    ## push to repo-B
+        ## commit to repo-A
+
+        ## push to repo-A
+
+        ## commit to repo-B
+
+        ## push to repo-B
 
 
 if __name__ == '__main__':
