@@ -13,6 +13,7 @@ level_dict = {
     }
 desired_level = level_dict[ os.environ.get('SQL_EXPORT__LOG_LEVEL', 'debug') ]
 logging.basicConfig( 
+    filename=os.environ['SQL_EXPORT__LOG_PATH'],
     level=desired_level,
     format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s', 
     datefmt='%d/%b/%Y %H:%M:%S'
