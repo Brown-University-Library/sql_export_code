@@ -3,7 +3,7 @@ Controller.
 """
 
 import logging, os
-import trio
+# import trio
 
 
 ## set up logging ---------------------------------------------------
@@ -22,10 +22,18 @@ log = logging.getLogger(__name__)
 log.debug( 'log set' )
 
 
-async def main():
+def manager():
+    """ Manages flow of data from mysql to github.
+        Called by dunder-main. """
+    
+    ## validate environment variables -------------------------------
+    (ok , err) = validate_env_vars()
 
-    ## initiate a mysql dump
+    ## TODO-determine whether to run script -------------------------
+    # (continue, err) = determine_whether_to_run_script()
 
+    ## initiate a mysql dump --
+    HEREZZ
 
     ## evaluate if there have been any changes
     """
@@ -42,6 +50,14 @@ async def main():
 
         ## push to repo-B
 
+    ## end def manager()
+
+
+def validate_env_vars():
+    validity = True
+    err = None
+    return (validity, err)
+
 
 if __name__ == '__main__':
-    trio.run( main )
+    manager()
