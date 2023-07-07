@@ -2,8 +2,7 @@
 Controller.
 """
 
-import logging, os
-# import trio
+import logging, os, subprocess
 
 
 ## set up logging ---------------------------------------------------
@@ -22,18 +21,24 @@ log = logging.getLogger(__name__)
 log.debug( 'log set' )
 
 
+## envars -----------------------------------------------------------
+SQL_OUTPUT_FILEPATH = os.environ['SQL_EXPORT__SQL_OUTPUT_FILEPATH']
+MYSQLDUMP_FILEPATH = os.environ['SQL_EXPORT__MYSQLDUMP_FILEPATH']
+MYSQLDUMP_CONF_FILEPATH = os.environ['SQL_EXPORT__MYSQLDUMP_CONF_FILEPATH']
+USERNAME = os.environ['SQL_EXPORT__USERNAME']
+HOST = os.environ['SQL_EXPORT__HOST']
+DATABASE_NAME = os.environ['SQL_EXPORT__DATABASE_NAME']
+
+
 def manager():
     """ Manages flow of data from mysql to github.
         Called by dunder-main. """
     
-    ## validate environment variables -------------------------------
-    (ok , err) = validate_env_vars()
-
     ## TODO-determine whether to run script -------------------------
-    (continue_processing, err) = determine_whether_to_run_script()  # TODO; hard-coded to True for now
+    continue_processing: bool = determine_whether_to_run_script()  # TODO; hard-coded to True for now
 
     ## initiate a mysql dump ----------------------------------------
-    (sql_filepath, err) = initiate_mysql_dump()
+    sql_filepath: str = initiate_mysql_dump()
 
     ## evaluate if there have been any changes ----------------------
     (changes_detected, err) = look_for_changes( sql_filepath )  # TODO; hard-coded to True for now
@@ -58,10 +63,32 @@ def manager():
     ## end def manager()
 
 
-def validate_env_vars():
-    validity = True
-    err = None
-    return (validity, err)
+## helper functions -------------------------------------------------
+
+
+def determine_whether_to_run_script() -> bool:
+    """ TODO """
+    return True
+
+
+def initiate_mysql_dump():
+    """ Runs mysqldump command to create a sql file. 
+        Called by manager(). """
+    mysqldump_command = [
+        MYSQLDUMP_FILEPATH,
+        f'--defaults-file={MYSQLDUMP_CONF_FILEPATH}',
+        f'--user={USERNAME}',
+        f'--host={HOST}',
+        '--enable-cleartext-plugin',
+        '--skip-lock-tables',
+        '--no-tablespaces',
+        '--skip-extended-insert',
+        DATABASE_NAME,
+    ]
+    with open(SQL_OUTPUT_FILEPATH, 'w') as file:
+        subprocess.run(mysqldump_command, stdout=file)
+    log.debug( f'sql file produced, at ``{SQL_OUTPUT_FILEPATH}``' )
+    return
 
 
 if __name__ == '__main__':
