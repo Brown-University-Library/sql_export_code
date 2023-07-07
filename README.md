@@ -4,14 +4,12 @@ Experiments with exporting SQL for purposes of backup and of db data-and-structu
 
 ---
 
-# Work steps...
+# Usage
 
-- figure out repo to clone
-- clone local repo
-- code git pull
-- code mysqldump
-- code git commit
-- code git push
-- run mysqldump "--single-transaction" flag by JM (for BK)
+```
+$ cd /path/to/sqlexports_stuff/sr_sql_exports/
+$ source ../env/bin/activate
+$ python3 ./main.py
+```
 
 ---
