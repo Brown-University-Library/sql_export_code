@@ -85,9 +85,14 @@ def initiate_mysql_dump():
         '--skip-extended-insert',
         DATABASE_NAME,
     ]
+    log.debug( f'command, ``{" ".join(mysqldump_command)}``')
     with open(SQL_OUTPUT_FILEPATH, 'w') as file:
-        subprocess.run(mysqldump_command, stdout=file)
-    log.debug( f'sql file produced, at ``{SQL_OUTPUT_FILEPATH}``' )
+        try:
+            subprocess.run(mysqldump_command, stdout=file)
+            log.debug( f'sql file produced, at ``{SQL_OUTPUT_FILEPATH}``' )
+        except Exception as e:
+            log.exception( f'exception, ``{e}``' )
+            raise Exception( f'exception, ``{e}``' )
     return
 
 
