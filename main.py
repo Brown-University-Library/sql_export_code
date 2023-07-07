@@ -34,13 +34,13 @@ def manager():
     """ Manages flow of data from mysql to github.
         Called by dunder-main. """
     
-    ## TODO-determine whether to run script -------------------------
+    ## possibe TODO -- determine whether to run script --------------
     continue_processing: bool = determine_whether_to_run_script()  # TODO; hard-coded to True for now
 
     ## initiate a mysql dump ----------------------------------------
     initiate_mysql_dump()
 
-    ## evaluate if there have been any changes ----------------------
+    ## possible TODO -- evaluate if there have been any changes -----
     changes_detected = look_for_changes()  # TODO; hard-coded to True for now
 
     ## update repos -------------------------------------------------
