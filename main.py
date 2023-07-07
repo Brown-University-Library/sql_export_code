@@ -38,15 +38,13 @@ def manager():
     continue_processing: bool = determine_whether_to_run_script()  # TODO; hard-coded to True for now
 
     ## initiate a mysql dump ----------------------------------------
-    sql_filepath: str = initiate_mysql_dump()
+    initiate_mysql_dump()
 
     ## evaluate if there have been any changes ----------------------
-    (changes_detected, err) = look_for_changes( sql_filepath )  # TODO; hard-coded to True for now
+    changes_detected = look_for_changes()  # TODO; hard-coded to True for now
 
     ## update repos -------------------------------------------------
-    ## if the data has changed...
-    continue_flow = True
-    if continue_flow:
+    if changes_detected:
 
         ## commit to repo-A
         (ok, err) = commit_to_repo_A()
@@ -67,7 +65,7 @@ def manager():
 
 
 def determine_whether_to_run_script() -> bool:
-    """ TODO """
+    """ possible TODO -- maybe some sort of initial db query to find last-updated date? """
     return True
 
 
@@ -94,6 +92,11 @@ def initiate_mysql_dump():
             log.exception( f'exception, ``{e}``' )
             raise Exception( f'exception, ``{e}``' )
     return
+
+
+def look_for_changes() -> bool:
+    """ possible TODO -- perhaps this will be the place to ascertain last-updated date? """
+    return True
 
 
 if __name__ == '__main__':
