@@ -115,7 +115,7 @@ def commit_to_repo_A():
         'updates sql from scripted mysqldump',
         ]
     log.debug( f'git_commit_command, ``{" ".join(git_commit_command)}``' )
-    with open(SQL_EXPORT__LOG_PATH, 'w') as log_file:
+    with open(SQL_EXPORT__LOG_PATH, 'a') as log_file:
         try:
             subprocess.run(git_commit_command, stdout=log_file)
             log.debug( f'git_commit_command output at ``{SQL_EXPORT__LOG_PATH}``' )
