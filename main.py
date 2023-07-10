@@ -50,7 +50,7 @@ def manager():
         commit_to_repo_A()
 
         ## push to repo-A
-        (ok, err) = push_to_repo_A()
+        push_to_repo_A()
 
         # ## commit to repo-B
         # (ok, err) = commit_to_repo_B()
@@ -69,7 +69,7 @@ def determine_whether_to_run_script() -> bool:
     return True
 
 
-def initiate_mysql_dump():
+def initiate_mysql_dump() -> None:
     """ Runs mysqldump command to create a sql file. 
         Called by manager(). """
     mysqldump_command = [
@@ -99,7 +99,7 @@ def look_for_changes() -> bool:
     return True
 
 
-def commit_to_repo_A():
+def commit_to_repo_A() -> None:
     """ Commits to repo-A.
         Called by manager(). """
     log.debug( 'starting commit_to_repo_A()' )
@@ -119,6 +119,30 @@ def commit_to_repo_A():
         try:
             subprocess.run(git_commit_command, stdout=log_file)
             log.debug( f'git_commit_command output at ``{SQL_EXPORT__LOG_PATH}``' )
+        except Exception as e:
+            log.exception( f'exception, ``{e}``' )
+            raise Exception( f'exception, ``{e}``' )
+    return 
+
+
+def push_to_repo_A() -> None:
+    """ Pushes to repo-A.
+        Called by manager(). """
+    log.debug( 'starting push_to_repo_A()' )
+    ## change to target dir -----------------------------------------
+    log.debug( f'cwd, ``{os.getcwd()}``' )
+    os.chdir( REPO_DIR_PATH )  # likely can be removed; should alreading be in the right place
+    log.debug( f'cwd, ``{os.getcwd()}``' )
+    ## run git commit -----------------------------------------------
+    git_push_command = [
+        'git',
+        'push',
+        ]
+    log.debug( f'git_push_command, ``{" ".join(git_push_command)}``' )
+    with open(SQL_EXPORT__LOG_PATH, 'a') as log_file:
+        try:
+            subprocess.run(git_push_command, stdout=log_file)
+            log.debug( f'git_push_command output at ``{SQL_EXPORT__LOG_PATH}``' )
         except Exception as e:
             log.exception( f'exception, ``{e}``' )
             raise Exception( f'exception, ``{e}``' )
