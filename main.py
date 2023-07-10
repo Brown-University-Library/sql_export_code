@@ -4,6 +4,15 @@ Controller.
 
 import logging, os, subprocess
 
+## envars -----------------------------------------------------------
+SQL_EXPORT__LOG_PATH = os.environ['SQL_EXPORT__LOG_PATH']
+SQL_OUTPUT_FILEPATH = os.environ['SQL_EXPORT__SQL_OUTPUT_FILEPATH']
+MYSQLDUMP_FILEPATH = os.environ['SQL_EXPORT__MYSQLDUMP_FILEPATH']
+MYSQLDUMP_CONF_FILEPATH = os.environ['SQL_EXPORT__MYSQLDUMP_CONF_FILEPATH']
+USERNAME = os.environ['SQL_EXPORT__USERNAME']
+HOST = os.environ['SQL_EXPORT__HOST']
+DATABASE_NAME = os.environ['SQL_EXPORT__DATABASE_NAME']
+REPO_DIR_PATH = os.environ['SQL_EXPORT__REPO_DIR_PATH']
 
 ## set up logging ---------------------------------------------------
 level_dict = {
@@ -12,22 +21,13 @@ level_dict = {
     }
 desired_level = level_dict[ os.environ.get('SQL_EXPORT__LOG_LEVEL', 'debug') ]
 logging.basicConfig( 
-    filename=os.environ['SQL_EXPORT__LOG_PATH'],
+    filename=SQL_EXPORT__LOG_PATH,
     level=desired_level,
     format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s', 
     datefmt='%d/%b/%Y %H:%M:%S'
     )
 log = logging.getLogger(__name__)
 log.debug( 'log set' )
-
-
-## envars -----------------------------------------------------------
-SQL_OUTPUT_FILEPATH = os.environ['SQL_EXPORT__SQL_OUTPUT_FILEPATH']
-MYSQLDUMP_FILEPATH = os.environ['SQL_EXPORT__MYSQLDUMP_FILEPATH']
-MYSQLDUMP_CONF_FILEPATH = os.environ['SQL_EXPORT__MYSQLDUMP_CONF_FILEPATH']
-USERNAME = os.environ['SQL_EXPORT__USERNAME']
-HOST = os.environ['SQL_EXPORT__HOST']
-DATABASE_NAME = os.environ['SQL_EXPORT__DATABASE_NAME']
 
 
 def manager():
@@ -47,16 +47,16 @@ def manager():
     if changes_detected:
 
         ## commit to repo-A
-        (ok, err) = commit_to_repo_A()
+        commit_to_repo_A()
 
         ## push to repo-A
         (ok, err) = push_to_repo_A()
 
-        ## commit to repo-B
-        (ok, err) = commit_to_repo_B()
+        # ## commit to repo-B
+        # (ok, err) = commit_to_repo_B()
 
-        ## push to repo-B
-        (ok, err) = push_to_repo_B()
+        # ## push to repo-B
+        # (ok, err) = push_to_repo_B()
 
     ## end def manager()
 
@@ -98,9 +98,16 @@ def look_for_changes() -> bool:
     """ possible TODO -- perhaps this will be the place to ascertain last-updated date? """
     return True
 
+
 def commit_to_repo_A():
     """ Commits to repo-A.
         Called by manager(). """
+    log.debug( 'starting commit_to_repo_A()' )
+    ## change to target dir -----------------------------------------
+    log.debug( f'cwd, ``{os.getcwd()}``' )
+    os.chdir( REPO_DIR_PATH )
+    log.debug( f'cwd, ``{os.getcwd()}``' )
+    ## run git commit -----------------------------------------------
     git_commit_command = [
         'git',
         'commit',
@@ -108,9 +115,16 @@ def commit_to_repo_A():
         'updates sql from scripted mysqldump',
         ]
     log.debug( f'git_commit_command, ``{" ".join(git_commit_command)}``' )
-    HEREZZ -- add subprocess.run() call
-    return (True, None)
+    with open(SQL_EXPORT__LOG_PATH, 'w') as log_file:
+        try:
+            subprocess.run(git_commit_command, stdout=log_file)
+            log.debug( f'git_commit_command output at ``{SQL_EXPORT__LOG_PATH}``' )
+        except Exception as e:
+            log.exception( f'exception, ``{e}``' )
+            raise Exception( f'exception, ``{e}``' )
+    return 
 
 
 if __name__ == '__main__':
     manager()
+    log.debug( 'processing complete' )
