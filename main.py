@@ -83,7 +83,7 @@ def initiate_mysql_dump():
         '--skip-extended-insert',
         DATABASE_NAME,
     ]
-    log.debug( f'command, ``{" ".join(mysqldump_command)}``')
+    log.debug( f'mysqldump_command, ``{" ".join(mysqldump_command)}``')
     with open(SQL_OUTPUT_FILEPATH, 'w') as file:
         try:
             subprocess.run(mysqldump_command, stdout=file)
@@ -97,6 +97,19 @@ def initiate_mysql_dump():
 def look_for_changes() -> bool:
     """ possible TODO -- perhaps this will be the place to ascertain last-updated date? """
     return True
+
+def commit_to_repo_A():
+    """ Commits to repo-A.
+        Called by manager(). """
+    git_commit_command = [
+        'git',
+        'commit',
+        '-am',
+        'updates sql from scripted mysqldump',
+        ]
+    log.debug( f'git_commit_command, ``{" ".join(git_commit_command)}``' )
+    HEREZZ -- add subprocess.run() call
+    return (True, None)
 
 
 if __name__ == '__main__':
