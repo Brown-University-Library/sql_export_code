@@ -2,17 +2,19 @@
 Controller.
 """
 
-import logging, os, subprocess
+import logging, os, shutil, subprocess
 
 ## envars -----------------------------------------------------------
 SQL_EXPORT__LOG_PATH = os.environ['SQL_EXPORT__LOG_PATH']
-SQL_OUTPUT_FILEPATH = os.environ['SQL_EXPORT__SQL_OUTPUT_FILEPATH']
-MYSQLDUMP_FILEPATH = os.environ['SQL_EXPORT__MYSQLDUMP_FILEPATH']
-MYSQLDUMP_CONF_FILEPATH = os.environ['SQL_EXPORT__MYSQLDUMP_CONF_FILEPATH']
-USERNAME = os.environ['SQL_EXPORT__USERNAME']
-HOST = os.environ['SQL_EXPORT__HOST']
-DATABASE_NAME = os.environ['SQL_EXPORT__DATABASE_NAME']
-REPO_DIR_PATH = os.environ['SQL_EXPORT__REPO_DIR_PATH']
+SQL_OUTPUT_FILEPATH = os.environ['SQL_EXPORT__SQL_OUTPUT_FILEPATH']             # for mysqldump output
+MYSQLDUMP_FILEPATH = os.environ['SQL_EXPORT__MYSQLDUMP_FILEPATH']               # for mysqldump output
+MYSQLDUMP_CONF_FILEPATH = os.environ['SQL_EXPORT__MYSQLDUMP_CONF_FILEPATH']     # for mysqldump output
+USERNAME = os.environ['SQL_EXPORT__USERNAME']                                   # for mysqldump output
+HOST = os.environ['SQL_EXPORT__HOST']                                           # for mysqldump output
+DATABASE_NAME = os.environ['SQL_EXPORT__DATABASE_NAME']                         # for mysqldump output
+REPO_A_DIR_PATH = os.environ['SQL_EXPORT__REPO_DIR_PATH']                       # for repo-A commit and push
+SQL_B_OVERWRITE_PATH = os.environ['SQL_EXPORT__SQL_B_OVERWRITE_PATH']           # for repo-B overwrite
+REPO_B_DIR_PATH = os.environ['SQL_EXPORT__REPO_B_DIR_PATH']                     # for repo-B commit and push
 
 ## set up logging ---------------------------------------------------
 level_dict = {
@@ -52,11 +54,14 @@ def manager():
         ## push to repo-A
         push_to_repo_A()
 
-        # ## commit to repo-B
-        # (ok, err) = commit_to_repo_B()
+        ## update repo-B
+        update_repo_B()
 
-        # ## push to repo-B
-        # (ok, err) = push_to_repo_B()
+        ## commit to repo-B
+        commit_to_repo_B()
+
+        ## push to repo-B
+        push_to_repo_B()
 
     ## end def manager()
 
@@ -105,7 +110,7 @@ def commit_to_repo_A() -> None:
     log.debug( 'starting commit_to_repo_A()' )
     ## change to target dir -----------------------------------------
     log.debug( f'cwd, ``{os.getcwd()}``' )
-    os.chdir( REPO_DIR_PATH )
+    os.chdir( REPO_A_DIR_PATH )
     log.debug( f'cwd, ``{os.getcwd()}``' )
     ## run git commit -----------------------------------------------
     git_commit_command = [
@@ -114,11 +119,11 @@ def commit_to_repo_A() -> None:
         '-am',
         'updates sql from scripted mysqldump',
         ]
-    log.debug( f'git_commit_command, ``{" ".join(git_commit_command)}``' )
+    log.debug( f'repo-a git_commit_command, ``{" ".join(git_commit_command)}``' )
     with open(SQL_EXPORT__LOG_PATH, 'a') as log_file:
         try:
             subprocess.run(git_commit_command, stdout=log_file)
-            log.debug( f'git_commit_command output at ``{SQL_EXPORT__LOG_PATH}``' )
+            log.debug( f'repo-a git_commit_command output at ``{SQL_EXPORT__LOG_PATH}``' )
         except Exception as e:
             log.exception( f'exception, ``{e}``' )
             raise Exception( f'exception, ``{e}``' )
@@ -131,18 +136,80 @@ def push_to_repo_A() -> None:
     log.debug( 'starting push_to_repo_A()' )
     ## change to target dir -----------------------------------------
     log.debug( f'cwd, ``{os.getcwd()}``' )
-    os.chdir( REPO_DIR_PATH )  # likely can be removed; should alreading be in the right place
+    os.chdir( REPO_A_DIR_PATH )  # likely can be removed; should alreading be in the right place
     log.debug( f'cwd, ``{os.getcwd()}``' )
     ## run git commit -----------------------------------------------
     git_push_command = [
         'git',
         'push',
         ]
-    log.debug( f'git_push_command, ``{" ".join(git_push_command)}``' )
+    log.debug( f'repo-A git_push_command, ``{" ".join(git_push_command)}``' )
     with open(SQL_EXPORT__LOG_PATH, 'a') as log_file:
         try:
             subprocess.run(git_push_command, stdout=log_file)
-            log.debug( f'git_push_command output at ``{SQL_EXPORT__LOG_PATH}``' )
+            log.debug( f'repo-A  git_push_command output at ``{SQL_EXPORT__LOG_PATH}``' )
+        except Exception as e:
+            log.exception( f'exception, ``{e}``' )
+            raise Exception( f'exception, ``{e}``' )
+    return 
+
+
+def update_repo_B() -> None:
+    """ Copies sql file to repo-B. 
+        Called by manager(). """
+    log.debug( 'starting update_repo_B()' )
+    try:
+        shutil.copy2( SQL_OUTPUT_FILEPATH, SQL_B_OVERWRITE_PATH )
+    except Exception as e:
+        log.exception( f'exception, ``{e}``' )
+        raise Exception( f'exception, ``{e}``' )
+    return
+
+
+def commit_to_repo_B() -> None:
+    """ Commits to repo-B.
+        Possible TODO: merge with commit_to_repo_A().
+        Called by manager(). """
+    log.debug( 'starting commit_to_repo_B()' )
+    ## change to target dir -----------------------------------------
+    log.debug( f'cwd, ``{os.getcwd()}``' )
+    os.chdir( REPO_B_DIR_PATH )
+    log.debug( f'cwd, ``{os.getcwd()}``' )
+    ## run git commit -----------------------------------------------
+    git_commit_command = [
+        'git',
+        'commit',
+        '-am',
+        'updates sql from scripted mysqldump',
+        ]
+    log.debug( f'repo-b git_commit_command, ``{" ".join(git_commit_command)}``' )
+    with open(SQL_EXPORT__LOG_PATH, 'a') as log_file:
+        try:
+            subprocess.run(git_commit_command, stdout=log_file)
+            log.debug( f'repo-b git_commit_command output at ``{SQL_EXPORT__LOG_PATH}``' )
+        except Exception as e:
+            log.exception( f'exception, ``{e}``' )
+            raise Exception( f'exception, ``{e}``' )
+    return 
+
+def push_to_repo_B() -> None:
+    """ Pushes to repo-A.
+        Called by manager(). """
+    log.debug( 'starting push_to_repo_A()' )
+    ## change to target dir -----------------------------------------
+    log.debug( f'cwd, ``{os.getcwd()}``' )
+    os.chdir( REPO_B_DIR_PATH )  # likely can be removed; should alreading be in the right place
+    log.debug( f'cwd, ``{os.getcwd()}``' )
+    ## run git commit -----------------------------------------------
+    git_push_command = [
+        'git',
+        'push',
+        ]
+    log.debug( f'repo-B git_push_command, ``{" ".join(git_push_command)}``' )
+    with open(SQL_EXPORT__LOG_PATH, 'a') as log_file:
+        try:
+            subprocess.run(git_push_command, stdout=log_file)
+            log.debug( f'repo-B  git_push_command output at ``{SQL_EXPORT__LOG_PATH}``' )
         except Exception as e:
             log.exception( f'exception, ``{e}``' )
             raise Exception( f'exception, ``{e}``' )
