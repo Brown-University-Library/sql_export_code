@@ -5,25 +5,28 @@ Controller.
 import logging, os, shutil, subprocess
 
 ## envars -----------------------------------------------------------
-SQL_EXPORT__LOG_PATH = os.environ['SQL_EXPORT__LOG_PATH']
-SQL_OUTPUT_FILEPATH = os.environ['SQL_EXPORT__SQL_OUTPUT_FILEPATH']             # for mysqldump output
-MYSQLDUMP_FILEPATH = os.environ['SQL_EXPORT__MYSQLDUMP_FILEPATH']               # for mysqldump output
-MYSQLDUMP_CONF_FILEPATH = os.environ['SQL_EXPORT__MYSQLDUMP_CONF_FILEPATH']     # for mysqldump output
-USERNAME = os.environ['SQL_EXPORT__USERNAME']                                   # for mysqldump output
-HOST = os.environ['SQL_EXPORT__HOST']                                           # for mysqldump output
-DATABASE_NAME = os.environ['SQL_EXPORT__DATABASE_NAME']                         # for mysqldump output
+LOG_PATH = os.environ['LOG_PATH']
+LOG_LEVEL = os.environ['SQL_EXPORT__LOG_LEVEL']
 REPO_A_DIR_PATH = os.environ['SQL_EXPORT__REPO_DIR_PATH']                       # for repo-A commit and push
-SQL_B_OVERWRITE_PATH = os.environ['SQL_EXPORT__SQL_B_OVERWRITE_PATH']           # for repo-B overwrite
 REPO_B_DIR_PATH = os.environ['SQL_EXPORT__REPO_B_DIR_PATH']                     # for repo-B commit and push
+DATABASE_NAME_A = os.environ['SQL_EXPORT__DATABASE_NAME_A']                     # for mysqldump connection
+DATABASE_NAME_B = os.environ['SQL_EXPORT__DATABASE_NAME_B']                     # for mysqldump connection
+MYSQLDUMP_COMMAND_FILEPATH = os.environ['SQL_EXPORT__MYSQLDUMP_FILEPATH']       # for mysqldump connection
+MYSQLDUMP_CONF_FILEPATH = os.environ['SQL_EXPORT__MYSQLDUMP_CONF_FILEPATH']     # for mysqldump connection
+USERNAME = os.environ['SQL_EXPORT__USERNAME']                                   # for mysqldump connection
+HOST = os.environ['SQL_EXPORT__HOST']                                           # for mysqldump connection
+SQL_OUTPUT_FILEPATH_A = os.environ['SQL_EXPORT__SQL_OUTPUT_FILEPATH_A']         # for database-A mysqldump output
+SQL_OUTPUT_FILEPATH_B = os.environ['SQL_EXPORT__SQL_OUTPUT_FILEPATH_B']         # for database-B mysqldump output
+SQL_OVERWRITE_PATH = os.environ['SQL_EXPORT__SQL_OVERWRITE_PATH']               # for repo-B/database-A overwrite
 
 ## set up logging ---------------------------------------------------
 level_dict = {
     'debug': logging.DEBUG,
     'info': logging.INFO,
     }
-desired_level = level_dict[ os.environ.get('SQL_EXPORT__LOG_LEVEL', 'debug') ]
+desired_level = level_dict[ LOG_LEVEL ]
 logging.basicConfig( 
-    filename=SQL_EXPORT__LOG_PATH,
+    filename=LOG_PATH,
     level=desired_level,
     format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s', 
     datefmt='%d/%b/%Y %H:%M:%S'
@@ -34,13 +37,13 @@ log.debug( 'log set' )
 
 def manager():
     """ Manages flow of data from mysql to github.
-        Called by dunder-main. """
+        Called by dundermain. """
     
     ## possibe TODO -- determine whether to run script --------------
     continue_processing: bool = determine_whether_to_run_script()  # TODO; hard-coded to True for now
 
-    ## initiate a mysql dump ----------------------------------------
-    initiate_mysql_dump()
+    ## initiate repo-A mysql dump -----------------------------------
+    initiate_mysql_dump( db_name=DATABASE_NAME_A, output_filepath=SQL_OUTPUT_FILEPATH_A )
 
     ## possible TODO -- evaluate if there have been any changes -----
     changes_detected = look_for_changes()  # TODO; hard-coded to True for now
@@ -74,11 +77,11 @@ def determine_whether_to_run_script() -> bool:
     return True
 
 
-def initiate_mysql_dump() -> None:
+def initiate_mysql_dump( db_name, output_filepath ) -> None:
     """ Runs mysqldump command to create a sql file. 
         Called by manager(). """
     mysqldump_command = [
-        MYSQLDUMP_FILEPATH,
+        MYSQLDUMP_COMMAND_FILEPATH,
         f'--defaults-file={MYSQLDUMP_CONF_FILEPATH}',
         f'--user={USERNAME}',
         f'--host={HOST}',
@@ -86,17 +89,42 @@ def initiate_mysql_dump() -> None:
         '--skip-lock-tables',
         '--no-tablespaces',
         '--skip-extended-insert',
-        DATABASE_NAME,
+        db_name,
     ]
     log.debug( f'mysqldump_command, ``{" ".join(mysqldump_command)}``')
-    with open(SQL_OUTPUT_FILEPATH, 'w') as file:
+    with open(output_filepath, 'w') as file:
         try:
             subprocess.run(mysqldump_command, stdout=file)
-            log.debug( f'sql file produced, at ``{SQL_OUTPUT_FILEPATH}``' )
+            log.debug( f'sql file produced, at ``{output_filepath}``' )
         except Exception as e:
             log.exception( f'exception, ``{e}``' )
             raise Exception( f'exception, ``{e}``' )
     return
+
+
+# def initiate_mysql_dump() -> None:
+#     """ Runs mysqldump command to create a sql file. 
+#         Called by manager(). """
+#     mysqldump_command = [
+#         MYSQLDUMP_FILEPATH,
+#         f'--defaults-file={MYSQLDUMP_CONF_FILEPATH}',
+#         f'--user={USERNAME}',
+#         f'--host={HOST}',
+#         '--enable-cleartext-plugin',
+#         '--skip-lock-tables',
+#         '--no-tablespaces',
+#         '--skip-extended-insert',
+#         DATABASE_NAME,
+#     ]
+#     log.debug( f'mysqldump_command, ``{" ".join(mysqldump_command)}``')
+#     with open(SQL_OUTPUT_FILEPATH, 'w') as file:
+#         try:
+#             subprocess.run(mysqldump_command, stdout=file)
+#             log.debug( f'sql file produced, at ``{SQL_OUTPUT_FILEPATH}``' )
+#         except Exception as e:
+#             log.exception( f'exception, ``{e}``' )
+#             raise Exception( f'exception, ``{e}``' )
+#     return
 
 
 def look_for_changes() -> bool:
@@ -120,10 +148,10 @@ def commit_to_repo_A() -> None:
         'updates sql from scripted mysqldump',
         ]
     log.debug( f'repo-a git_commit_command, ``{" ".join(git_commit_command)}``' )
-    with open(SQL_EXPORT__LOG_PATH, 'a') as log_file:
+    with open(LOG_PATH, 'a') as log_file:
         try:
             subprocess.run(git_commit_command, stdout=log_file)
-            log.debug( f'repo-a git_commit_command output at ``{SQL_EXPORT__LOG_PATH}``' )
+            log.debug( f'repo-a git_commit_command output at ``{LOG_PATH}``' )
         except Exception as e:
             log.exception( f'exception, ``{e}``' )
             raise Exception( f'exception, ``{e}``' )
@@ -144,10 +172,10 @@ def push_to_repo_A() -> None:
         'push',
         ]
     log.debug( f'repo-A git_push_command, ``{" ".join(git_push_command)}``' )
-    with open(SQL_EXPORT__LOG_PATH, 'a') as log_file:
+    with open(LOG_PATH, 'a') as log_file:
         try:
             subprocess.run(git_push_command, stdout=log_file)
-            log.debug( f'repo-A  git_push_command output at ``{SQL_EXPORT__LOG_PATH}``' )
+            log.debug( f'repo-A  git_push_command output at ``{LOG_PATH}``' )
         except Exception as e:
             log.exception( f'exception, ``{e}``' )
             raise Exception( f'exception, ``{e}``' )
@@ -155,11 +183,11 @@ def push_to_repo_A() -> None:
 
 
 def update_repo_B() -> None:
-    """ Copies sql file to repo-B. 
+    """ Copies sql-output-A file to repo-B. 
         Called by manager(). """
     log.debug( 'starting update_repo_B()' )
     try:
-        shutil.copy2( SQL_OUTPUT_FILEPATH, SQL_B_OVERWRITE_PATH )
+        shutil.copy2( SQL_OUTPUT_FILEPATH_A, SQL_OVERWRITE_PATH )
     except Exception as e:
         log.exception( f'exception, ``{e}``' )
         raise Exception( f'exception, ``{e}``' )
@@ -183,10 +211,10 @@ def commit_to_repo_B() -> None:
         'updates sql from scripted mysqldump',
         ]
     log.debug( f'repo-b git_commit_command, ``{" ".join(git_commit_command)}``' )
-    with open(SQL_EXPORT__LOG_PATH, 'a') as log_file:
+    with open(LOG_PATH, 'a') as log_file:
         try:
             subprocess.run(git_commit_command, stdout=log_file)
-            log.debug( f'repo-b git_commit_command output at ``{SQL_EXPORT__LOG_PATH}``' )
+            log.debug( f'repo-b git_commit_command output at ``{LOG_PATH}``' )
         except Exception as e:
             log.exception( f'exception, ``{e}``' )
             raise Exception( f'exception, ``{e}``' )
@@ -206,10 +234,10 @@ def push_to_repo_B() -> None:
         'push',
         ]
     log.debug( f'repo-B git_push_command, ``{" ".join(git_push_command)}``' )
-    with open(SQL_EXPORT__LOG_PATH, 'a') as log_file:
+    with open(LOG_PATH, 'a') as log_file:
         try:
             subprocess.run(git_push_command, stdout=log_file)
-            log.debug( f'repo-B  git_push_command output at ``{SQL_EXPORT__LOG_PATH}``' )
+            log.debug( f'repo-B  git_push_command output at ``{LOG_PATH}``' )
         except Exception as e:
             log.exception( f'exception, ``{e}``' )
             raise Exception( f'exception, ``{e}``' )
