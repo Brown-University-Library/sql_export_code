@@ -5,7 +5,7 @@ Controller.
 import logging, os, shutil, subprocess
 
 ## envars -----------------------------------------------------------
-LOG_PATH = os.environ['LOG_PATH']
+LOG_PATH = os.environ['SQL_EXPORT__LOG_PATH']
 LOG_LEVEL = os.environ['SQL_EXPORT__LOG_LEVEL']
 REPO_A_DIR_PATH = os.environ['SQL_EXPORT__REPO_DIR_PATH']                       # for repo-A commit and push
 REPO_B_DIR_PATH = os.environ['SQL_EXPORT__REPO_B_DIR_PATH']                     # for repo-B commit and push
