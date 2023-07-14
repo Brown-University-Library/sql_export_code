@@ -22,8 +22,8 @@ SQL_OUTPUT_FILEPATH_A = os.environ['SQL_EXPORT__SQL_OUTPUT_FILEPATH_A']         
 
 ## set up logging ---------------------------------------------------
 level_dict = {
-    'debug': logging.DEBUG,
-    'info': logging.INFO,
+    'DEBUG': logging.DEBUG,
+    'INFO': logging.INFO,
     }
 desired_level = level_dict[ LOG_LEVEL ]
 logging.basicConfig( 
