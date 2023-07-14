@@ -44,6 +44,7 @@ def manager():
 
     ## initiate repo-A mysql dump -----------------------------------
     initiate_mysql_dump( db_name=DATABASE_NAME_A, output_filepath=SQL_OUTPUT_FILEPATH_A )
+    initiate_mysql_dump( db_name=DATABASE_NAME_B, output_filepath=SQL_OUTPUT_FILEPATH_B )
 
     ## possible TODO -- evaluate if there have been any changes -----
     changes_detected = look_for_changes()  # TODO; hard-coded to True for now
