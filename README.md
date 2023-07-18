@@ -1,6 +1,8 @@
 # Purpose
 
-Experiments with exporting SQL for backup and for db data-and-structure migration.
+Exports SQL for backup and for db data-and-structure migration.
+
+For now just updates an sql-repo; eventually will also update a docker-data repo.
 
 ---
 
