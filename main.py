@@ -86,12 +86,24 @@ def determine_whether_to_run_script() -> bool:
 
 
 def checkout_repo_A_branch() -> None:
+    log.debug( 'starting checkout_repo_A_branch()' )
+    ## change to target dir -----------------------------------------
+    os.chdir( REPO_A_DIR_PATH )
+    log.debug( f'cwd, ``{os.getcwd()}``' )
+    ## run git checkout ---------------------------------------------
     git_checkout_command = [
         'git',
         'checkout',
         REPO_A_BRANCH,
         ]
     log.debug( f'repo-a git_checkout_command, ``{" ".join(git_checkout_command)}``' )
+    with open(LOG_PATH, 'a') as log_file:
+        try:
+            subprocess.run(git_checkout_command, stdout=log_file)
+            log.debug( f'repo-a git_commit_command output at ``{LOG_PATH}``' )
+        except Exception as e:
+            log.exception( f'exception, ``{e}``' )
+            raise Exception( f'exception, ``{e}``' )
     return
 
 
@@ -242,5 +254,6 @@ def push_to_repo_A() -> None:
 
 
 if __name__ == '__main__':
+    log.debug( '\n\nstarting sql-export-processing...' )
     manager()
     log.debug( 'processing complete' )
