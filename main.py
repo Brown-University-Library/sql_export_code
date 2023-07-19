@@ -11,13 +11,13 @@ LOG_LEVEL = os.environ['SQL_EXPORT__LOG_LEVEL']
 REPO_A_DIR_PATH = os.environ['SQL_EXPORT__REPO_A_DIR_PATH']                     # for repo-A commit and push
 REPO_A_BRANCH = os.environ['SQL_EXPORT__REPO_A_BRANCH']                         # for repo-A commit and push
 DATABASE_NAME_A = os.environ['SQL_EXPORT__DATABASE_NAME_A']                     # for mysqldump connection
-DATABASE_NAME_B = os.environ['SQL_EXPORT__DATABASE_NAME_B']                     # for mysqldump connection
 MYSQLDUMP_COMMAND_FILEPATH = os.environ['SQL_EXPORT__MYSQLDUMP_FILEPATH']       # for mysqldump connection
 MYSQLDUMP_CONF_FILEPATH = os.environ['SQL_EXPORT__MYSQLDUMP_CONF_FILEPATH']     # for mysqldump connection
 USERNAME = os.environ['SQL_EXPORT__USERNAME']                                   # for mysqldump connection
 HOST = os.environ['SQL_EXPORT__HOST']                                           # for mysqldump connection
 SQL_OUTPUT_FILEPATH_A = os.environ['SQL_EXPORT__SQL_OUTPUT_FILEPATH_A']         # for database-A mysqldump output
 
+# DATABASE_NAME_B = os.environ['SQL_EXPORT__DATABASE_NAME_B']                     # for mysqldump connection
 # REPO_B_DIR_PATH = os.environ['SQL_EXPORT__REPO_B_DIR_PATH']                     # for repo-B commit and push
 # SQL_OUTPUT_FILEPATH_B = os.environ['SQL_EXPORT__SQL_OUTPUT_FILEPATH_B']         # for database-B mysqldump output
 # SQL_OVERWRITE_PATH = os.environ['SQL_EXPORT__SQL_OVERWRITE_PATH']               # for repo-B/database-A overwrite
