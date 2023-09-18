@@ -109,29 +109,44 @@ def build_commands() -> dict:
     return commands
 
 
-def initiate_mysql_dump( db_name, output_filepath ) -> None:
+def initiate_mysql_dump( mysqldump_command: list, output_filepath: str ) -> None:
     """ Runs mysqldump command to create a sql file. 
         Called by manager(). """
-    mysqldump_command = [
-        MYSQLDUMP_COMMAND_FILEPATH,
-        f'--defaults-file={MYSQLDUMP_CONF_FILEPATH}',
-        f'--user={USERNAME}',
-        f'--host={HOST}',
-        '--enable-cleartext-plugin',
-        '--skip-lock-tables',
-        '--no-tablespaces',
-        '--skip-extended-insert',
-        db_name,
-    ]
     log.debug( f'mysqldump_command, ``{" ".join(mysqldump_command)}``')
     with open(output_filepath, 'w') as file:
         try:
             subprocess.run(mysqldump_command, stdout=file)
             log.debug( f'sql file produced, at ``{output_filepath}``' )
         except Exception as e:
-            log.exception( f'exception, ``{e}``' )
-            raise Exception( f'exception, ``{e}``' )
+            msg = f'exception, ``{e}``'
+            log.exception( msg )
+            raise Exception( msg )
     return
+
+
+# def initiate_mysql_dump( db_name: str, output_filepath: str ) -> None:
+#     """ Runs mysqldump command to create a sql file. 
+#         Called by manager(). """
+#     mysqldump_command = [
+#         MYSQLDUMP_COMMAND_FILEPATH,
+#         f'--defaults-file={MYSQLDUMP_CONF_FILEPATH}',
+#         f'--user={USERNAME}',
+#         f'--host={HOST}',
+#         '--enable-cleartext-plugin',
+#         '--skip-lock-tables',
+#         '--no-tablespaces',
+#         '--skip-extended-insert',
+#         db_name,
+#     ]
+#     log.debug( f'mysqldump_command, ``{" ".join(mysqldump_command)}``')
+#     with open(output_filepath, 'w') as file:
+#         try:
+#             subprocess.run(mysqldump_command, stdout=file)
+#             log.debug( f'sql file produced, at ``{output_filepath}``' )
+#         except Exception as e:
+#             log.exception( f'exception, ``{e}``' )
+#             raise Exception( f'exception, ``{e}``' )
+#     return
 
 
 def commit_to_repo() -> None:
@@ -155,8 +170,9 @@ def commit_to_repo() -> None:
             subprocess.run(git_commit_command, stdout=log_file)
             log.debug( f'repo-a git_commit_command output at ``{LOG_PATH}``' )
         except Exception as e:
-            log.exception( f'exception, ``{e}``' )
-            raise Exception( f'exception, ``{e}``' )
+            msg = f'exception, ``{e}``'
+            log.exception( msg )
+            raise Exception( msg )
     return 
 
 
@@ -179,8 +195,9 @@ def push_to_repo() -> None:
             subprocess.run(git_push_command, stdout=log_file)
             log.debug( f'repo-A  git_push_command output at ``{LOG_PATH}``' )
         except Exception as e:
-            log.exception( f'exception, ``{e}``' )
-            raise Exception( f'exception, ``{e}``' )
+            msg = f'exception, ``{e}``'
+            log.exception( msg )
+            raise Exception( msg )
     return 
 
 
