@@ -53,7 +53,8 @@ def manager():
 ## helper functions -------------------------------------------------
 
 def checkout_repo_branch() -> None:
-    log.debug( 'starting checkout_repo_A_branch()' )
+    """ Confirms proper branch. """
+    log.debug( 'starting checkout_repo__branch()' )
     ## change to target dir -----------------------------------------
     os.chdir( REPO_DIR_PATH )
     log.debug( f'cwd, ``{os.getcwd()}``' )
@@ -102,7 +103,7 @@ def build_commands() -> dict:
     return commands
 
 def initiate_mysql_dump( mysqldump_command: list, output_filepath: str ) -> None:
-    """ Runs mysqldump command to create a sql file. 
+    """ Runs supplied mysqldump command to create the sql file. 
         Called by manager(). """
     log.debug( f'mysqldump_command, ``{" ".join(mysqldump_command)}``')
     with open(output_filepath, 'w') as file:
@@ -140,9 +141,9 @@ def initiate_mysql_dump( mysqldump_command: list, output_filepath: str ) -> None
 #     return
 
 def commit_to_repo() -> None:
-    """ Commits to repo-A.
+    """ Commits the two new sql files to the repo.
         Called by manager(). """
-    log.debug( 'starting commit_to_repo_A()' )
+    log.debug( 'starting commit_to_repo_()' )
     ## change to target dir -----------------------------------------
     log.debug( f'cwd, ``{os.getcwd()}``' )
     os.chdir( REPO_DIR_PATH )
@@ -166,9 +167,9 @@ def commit_to_repo() -> None:
     return 
 
 def push_to_repo() -> None:
-    """ Pushes to repo-A.
+    """ Pushes the committed files to the repo.
         Called by manager(). """
-    log.debug( 'starting push_to_repo_A()' )
+    log.debug( 'starting push_to_repo_()' )
     ## change to target dir -----------------------------------------
     log.debug( f'cwd, ``{os.getcwd()}``' )
     os.chdir( REPO_DIR_PATH )  # likely can be removed; should alreading be in the right place
