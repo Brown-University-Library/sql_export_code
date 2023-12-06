@@ -18,6 +18,7 @@ DATABASE_NAME = os.environ['SQL_EXPORT__DATABASE_NAME']                         
 SQL_OUTPUT_INSERTS_SEPARATE = os.environ['SQL_EXPORT__SQL_OUTPUT_INSERTS_SEPARATE'] # for mysqldump output
 SQL_OUTPUT_INSERTS_TOGETHER = os.environ['SQL_EXPORT__SQL_OUTPUT_INSERTS_TOGETHER'] # for mysqldump output
 
+
 ## set up logging ---------------------------------------------------
 level_dict = {
     'DEBUG': logging.DEBUG,
@@ -32,6 +33,7 @@ logging.basicConfig(
     )
 log = logging.getLogger(__name__)
 log.debug( 'log set' )
+
 
 ## get to work ------------------------------------------------------
 def manager():
@@ -50,7 +52,9 @@ def manager():
 
     ## end def manager()
 
-## helper functions -------------------------------------------------
+
+## helper functions START -------------------------------------------
+
 
 def checkout_repo_branch() -> None:
     """ Confirms proper branch. """
@@ -73,6 +77,7 @@ def checkout_repo_branch() -> None:
             log.exception( f'exception, ``{e}``' )
             raise Exception( f'exception, ``{e}``' )
     return
+
 
 def build_commands() -> dict:
     """ Builds two commands.
@@ -102,6 +107,7 @@ def build_commands() -> dict:
     log.debug( f'commands, ``{commands}``' )
     return commands
 
+
 def initiate_mysql_dump( mysqldump_command: list, output_filepath: str ) -> None:
     """ Runs supplied mysqldump command to create the sql file. 
         Called by manager(). """
@@ -116,29 +122,6 @@ def initiate_mysql_dump( mysqldump_command: list, output_filepath: str ) -> None
             raise Exception( msg )
     return
 
-# def initiate_mysql_dump( db_name: str, output_filepath: str ) -> None:
-#     """ Runs mysqldump command to create a sql file. 
-#         Called by manager(). """
-#     mysqldump_command = [
-#         MYSQLDUMP_COMMAND_FILEPATH,
-#         f'--defaults-file={MYSQLDUMP_CONF_FILEPATH}',
-#         f'--user={USERNAME}',
-#         f'--host={HOST}',
-#         '--enable-cleartext-plugin',
-#         '--skip-lock-tables',
-#         '--no-tablespaces',
-#         '--skip-extended-insert',
-#         db_name,
-#     ]
-#     log.debug( f'mysqldump_command, ``{" ".join(mysqldump_command)}``')
-#     with open(output_filepath, 'w') as file:
-#         try:
-#             subprocess.run(mysqldump_command, stdout=file)
-#             log.debug( f'sql file produced, at ``{output_filepath}``' )
-#         except Exception as e:
-#             log.exception( f'exception, ``{e}``' )
-#             raise Exception( f'exception, ``{e}``' )
-#     return
 
 def commit_to_repo() -> None:
     """ Commits the two new sql files to the repo.
@@ -166,6 +149,7 @@ def commit_to_repo() -> None:
             raise Exception( msg )
     return 
 
+
 def push_to_repo() -> None:
     """ Pushes the committed files to the repo.
         Called by manager(). """
@@ -178,8 +162,10 @@ def push_to_repo() -> None:
     git_push_command = [
         'git',
         'push',
+        'origin',
+        f'{REPO_BRANCH}:{REPO_BRANCH}',
         ]
-    log.debug( f'repo-A git_push_command, ``{" ".join(git_push_command)}``' )
+    log.debug( f'repo git_push_command, ``{" ".join(git_push_command)}``' )
     with open(LOG_PATH, 'a') as log_file:
         try:
             subprocess.run(git_push_command, stdout=log_file)
@@ -189,6 +175,10 @@ def push_to_repo() -> None:
             log.exception( msg )
             raise Exception( msg )
     return 
+
+
+## helper functions END ---------------------------------------------
+
 
 ## dundermain -------------------------------------------------------
 if __name__ == '__main__':
