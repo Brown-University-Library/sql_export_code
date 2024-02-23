@@ -1,6 +1,5 @@
 """
 Controller.
-Note: holding off on repo-B work -- it requires conversion from sql to an sqlite-db.
 """
 
 import logging, os, shutil, subprocess
