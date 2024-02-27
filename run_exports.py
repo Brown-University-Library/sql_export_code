@@ -1,21 +1,25 @@
 """
-Controller.
+- Controller file, normally called by cron.
+- Dundermain calls manager(), which is near top of file, with helper functions below.
 """
 
-import logging, os, shutil, subprocess
+import logging, os, pathlib, shutil, subprocess
+
 
 ## set up envars ----------------------------------------------------
-LOG_PATH = os.environ['SQL_EXPORT__LOG_PATH']
+## paths ----------------------------------------
+LOG_PATH = pathlib.Path( os.environ['SQL_EXPORT__LOG_PATH'] )
+REPO_DIR_PATH = pathlib.Path( os.environ['SQL_EXPORT__REPO_DIR_PATH'] )                            # for repo commit and push
+MYSQLDUMP_COMMAND_FILEPATH = pathlib.Path( os.environ['SQL_EXPORT__MYSQLDUMP_FILEPATH'] )          # for mysqldump connection
+MYSQLDUMP_CONF_FILEPATH = pathlib.Path( os.environ['SQL_EXPORT__MYSQLDUMP_CONF_FILEPATH'] )         # for mysqldump connection
+SQL_OUTPUT_INSERTS_SEPARATE_PATH = pathlib.Path( os.environ['SQL_EXPORT__SQL_OUTPUT_INSERTS_SEPARATE_PATH'] ) # for mysqldump output
+SQL_OUTPUT_INSERTS_TOGETHER_PATH = pathlib.Path( os.environ['SQL_EXPORT__SQL_OUTPUT_INSERTS_TOGETHER_PATH'] ) # for mysqldump output
+## other ----------------------------------------
 LOG_LEVEL = os.environ['SQL_EXPORT__LOG_LEVEL']
-REPO_DIR_PATH = os.environ['SQL_EXPORT__REPO_DIR_PATH']                             # for repo commit and push
 REPO_BRANCH = os.environ['SQL_EXPORT__REPO_BRANCH']                                 # for repo commit and push
-MYSQLDUMP_COMMAND_FILEPATH = os.environ['SQL_EXPORT__MYSQLDUMP_FILEPATH']           # for mysqldump connection
-MYSQLDUMP_CONF_FILEPATH = os.environ['SQL_EXPORT__MYSQLDUMP_CONF_FILEPATH']         # for mysqldump connection
-USERNAME = os.environ['SQL_EXPORT__USERNAME']                                       # for mysqldump connection
 HOST = os.environ['SQL_EXPORT__HOST']                                               # for mysqldump connection
 DATABASE_NAME = os.environ['SQL_EXPORT__DATABASE_NAME']                             # for mysqldump connection
-SQL_OUTPUT_INSERTS_SEPARATE = os.environ['SQL_EXPORT__SQL_OUTPUT_INSERTS_SEPARATE'] # for mysqldump output
-SQL_OUTPUT_INSERTS_TOGETHER = os.environ['SQL_EXPORT__SQL_OUTPUT_INSERTS_TOGETHER'] # for mysqldump output
+USERNAME = os.environ['SQL_EXPORT__USERNAME']                                       # for mysqldump connection
 
 
 ## set up logging ---------------------------------------------------
@@ -34,27 +38,70 @@ log = logging.getLogger(__name__)
 log.debug( 'log set' )
 
 
-## get to work ------------------------------------------------------
+## main controller function -----------------------------------------
 def manager():
     """ Manages flow of data from mysql to github.
+        New flow:
+        - delete existing repo.
+        - shallow-clone repo.
+        - run mysqldump
+        - commit
+        - update permissions.
         Called by dundermain. """
-    ## checkout branch ----------------------------------------------
+    ## delete existing repo ---------------------
+    delete_existing_repo()
+    ## shallow-clone repo -----------------------
+    shallow_clone_repo()
+    ## checkout branch --------------------------
     checkout_repo_branch()
-    ## build the two commands ---------------------------------------
-    commands: dict = build_commands()
-    ## initiate mysql dump ------------------------------------------
-    initiate_mysql_dump( commands['inserts_separate_command'], output_filepath=SQL_OUTPUT_INSERTS_SEPARATE )
-    initiate_mysql_dump( commands['inserts_together_command'], output_filepath=SQL_OUTPUT_INSERTS_TOGETHER )
-    ## update repo --------------------------------------------------
+    ## run mysqldump ----------------------------
+    run_mysqldump()
+    ## commit and push to repo ------------------
     commit_to_repo()
     push_to_repo()
-
+    return
     ## end def manager()
 
 
 ## helper functions START -------------------------------------------
 
 
+def delete_existing_repo() -> None:
+    """ Deletes existing repo. """
+    log.debug( 'starting delete_existing_repo()' )
+    if REPO_DIR_PATH.exists():
+        try:
+            shutil.rmtree( REPO_DIR_PATH )
+            log.debug( f'deleted existing repo at ``{REPO_DIR_PATH}``' )
+        except Exception as e:
+            msg = f'exception, ``{e}``'
+            log.exception( msg )
+            raise Exception( msg )
+    return
+
+
+def shallow_clone_repo() -> None:
+    """ Clones repo. """
+    log.debug( 'starting shallow_clone_repo()' )
+    ## run git clone -----------------------------------------------
+    git_clone_command = [
+        'git',
+        'clone',
+        '--depth=1',
+        os.environ['SQL_EXPORT__REPO_URL'],
+        REPO_DIR_PATH,
+        ]
+    log.debug( f'repo git_clone_command, ``{" ".join(git_clone_command)}``' )
+    with open(LOG_PATH, 'a') as log_file:  # for subprocess stdout capture
+        try:
+            subprocess.run(git_clone_command, stdout=log_file)
+            log.debug( f'repo-a git_clone_command output at ``{LOG_PATH}``' )
+        except Exception as e:
+            log.exception( f'exception, ``{e}``' )
+            raise Exception( f'exception, ``{e}``' )
+    return
+
+        
 def checkout_repo_branch() -> None:
     """ Confirms proper branch. """
     log.debug( 'starting checkout_repo__branch()' )
@@ -75,6 +122,17 @@ def checkout_repo_branch() -> None:
         except Exception as e:
             log.exception( f'exception, ``{e}``' )
             raise Exception( f'exception, ``{e}``' )
+    return
+
+
+def run_mysqldump() -> None:
+    """ Runs mysqldump. """
+    log.debug( 'starting run_mysqldump()' )
+    ## build commands ----------------------------------------------
+    commands = build_commands()
+    ## run mysqldump -----------------------------------------------
+    initiate_mysql_dump( commands['inserts_separate_command'], SQL_OUTPUT_INSERTS_SEPARATE_PATH )
+    initiate_mysql_dump( commands['inserts_together_command'], SQL_OUTPUT_INSERTS_TOGETHER_PATH )
     return
 
 
@@ -107,7 +165,7 @@ def build_commands() -> dict:
     return commands
 
 
-def initiate_mysql_dump( mysqldump_command: list, output_filepath: str ) -> None:
+def initiate_mysql_dump( mysqldump_command: list, output_filepath: pathlib.Path ) -> None:
     """ Runs supplied mysqldump command to create the sql file. 
         Called by manager(). """
     log.debug( f'mysqldump_command, ``{" ".join(mysqldump_command)}``')
