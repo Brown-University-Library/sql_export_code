@@ -67,7 +67,8 @@ def manager():
 
 
 def delete_existing_repo() -> None:
-    """ Deletes existing repo. """
+    """ Deletes existing repo. 
+        Called by manager(). """
     log.debug( 'starting delete_existing_repo()' )
     if REPO_DIR_PATH.exists():
         try:
@@ -81,9 +82,10 @@ def delete_existing_repo() -> None:
 
 
 def shallow_clone_repo() -> None:
-    """ Clones repo. """
+    """ Shallow-clones repo -- whole purpose is to keep the repo directory on the server small.
+        Called by manager(). """
     log.debug( 'starting shallow_clone_repo()' )
-    ## run git clone -----------------------------------------------
+    ## run git clone ----------------------------
     git_clone_command = [
         'git',
         'clone',
@@ -103,12 +105,13 @@ def shallow_clone_repo() -> None:
 
         
 def checkout_repo_branch() -> None:
-    """ Confirms proper branch. """
+    """ Confirms proper branch. 
+        Called by manager(). """
     log.debug( 'starting checkout_repo__branch()' )
-    ## change to target dir -----------------------------------------
+    ## change to target dir ---------------------
     os.chdir( REPO_DIR_PATH )
     log.debug( f'cwd, ``{os.getcwd()}``' )
-    ## run git checkout ---------------------------------------------
+    ## run git checkout -------------------------
     git_checkout_command = [
         'git',
         'checkout',
@@ -126,11 +129,12 @@ def checkout_repo_branch() -> None:
 
 
 def run_mysqldump() -> None:
-    """ Runs mysqldump. """
+    """ Builds mysqldump commands, and runs them. 
+        Called by manager(). """
     log.debug( 'starting run_mysqldump()' )
-    ## build commands ----------------------------------------------
+    ## build commands ---------------------------
     commands = build_commands()
-    ## run mysqldump -----------------------------------------------
+    ## run mysqldump ----------------------------
     initiate_mysql_dump( commands['inserts_separate_command'], SQL_OUTPUT_INSERTS_SEPARATE_PATH )
     initiate_mysql_dump( commands['inserts_together_command'], SQL_OUTPUT_INSERTS_TOGETHER_PATH )
     return
@@ -138,7 +142,8 @@ def run_mysqldump() -> None:
 
 def build_commands() -> dict:
     """ Builds two commands.
-        Called by manager(). """
+        Puts each command in a dict, for ease of reference and clarity.
+        Called by run_mysqldump(). """
     commands = {}
     commands['inserts_separate_command'] = [
         MYSQLDUMP_COMMAND_FILEPATH,
@@ -148,7 +153,7 @@ def build_commands() -> dict:
         '--enable-cleartext-plugin',
         '--skip-lock-tables',
         '--no-tablespaces',
-        '--skip-extended-insert',
+        '--skip-extended-insert',  # key difference between two commands
         DATABASE_NAME,
     ]
     commands['inserts_together_command'] = [
@@ -167,7 +172,7 @@ def build_commands() -> dict:
 
 def initiate_mysql_dump( mysqldump_command: list, output_filepath: pathlib.Path ) -> None:
     """ Runs supplied mysqldump command to create the sql file. 
-        Called by manager(). """
+        Called by run_mysqldump(). """
     log.debug( f'mysqldump_command, ``{" ".join(mysqldump_command)}``')
     with open(output_filepath, 'w') as file:
         try:
@@ -184,11 +189,11 @@ def commit_to_repo() -> None:
     """ Commits the two new sql files to the repo.
         Called by manager(). """
     log.debug( 'starting commit_to_repo_()' )
-    ## change to target dir -----------------------------------------
+    ## change to target dir ---------------------
     log.debug( f'cwd, ``{os.getcwd()}``' )
     os.chdir( REPO_DIR_PATH )
     log.debug( f'cwd, ``{os.getcwd()}``' )
-    ## run git commit -----------------------------------------------
+    ## run git commit ---------------------------
     git_commit_command = [
         'git',
         'commit',
@@ -211,11 +216,11 @@ def push_to_repo() -> None:
     """ Pushes the committed files to the repo.
         Called by manager(). """
     log.debug( 'starting push_to_repo_()' )
-    ## change to target dir -----------------------------------------
+    ## change to target dir ---------------------
     log.debug( f'cwd, ``{os.getcwd()}``' )
     os.chdir( REPO_DIR_PATH )  # likely can be removed; should alreading be in the right place
     log.debug( f'cwd, ``{os.getcwd()}``' )
-    ## run git commit -----------------------------------------------
+    ## run git commit ---------------------------
     git_push_command = [
         'git',
         'push',
