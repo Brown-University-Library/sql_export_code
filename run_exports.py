@@ -16,6 +16,7 @@ SQL_OUTPUT_INSERTS_SEPARATE_PATH = pathlib.Path( os.environ['SQL_EXPORT__SQL_OUT
 SQL_OUTPUT_INSERTS_TOGETHER_PATH = pathlib.Path( os.environ['SQL_EXPORT__SQL_OUTPUT_INSERTS_TOGETHER_PATH'] ) # for mysqldump output
 ## other ----------------------------------------
 LOG_LEVEL = os.environ['SQL_EXPORT__LOG_LEVEL']
+REPO_URL = os.environ['SQL_EXPORT__REPO_URL']                                       # for repo clone, commit, and push
 REPO_BRANCH = os.environ['SQL_EXPORT__REPO_BRANCH']                                 # for repo commit and push
 HOST = os.environ['SQL_EXPORT__HOST']                                               # for mysqldump connection
 DATABASE_NAME = os.environ['SQL_EXPORT__DATABASE_NAME']                             # for mysqldump connection
@@ -90,8 +91,8 @@ def shallow_clone_repo() -> None:
         'git',
         'clone',
         '--depth=1',
-        os.environ['SQL_EXPORT__REPO_URL'],
-        REPO_DIR_PATH,
+        REPO_URL,
+        str(REPO_DIR_PATH),
         ]
     log.debug( f'repo git_clone_command, ``{" ".join(git_clone_command)}``' )
     with open(LOG_PATH, 'a') as log_file:  # for subprocess stdout capture
@@ -132,6 +133,7 @@ def run_mysqldump() -> None:
     """ Builds mysqldump commands, and runs them. 
         Called by manager(). """
     log.debug( 'starting run_mysqldump()' )
+    1/0
     ## build commands ---------------------------
     commands = build_commands()
     ## run mysqldump ----------------------------
