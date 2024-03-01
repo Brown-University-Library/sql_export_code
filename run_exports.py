@@ -54,7 +54,7 @@ def manager():
     ## shallow-clone repo -----------------------
     shallow_clone_repo()
     ## checkout branch --------------------------
-    checkout_repo_branch()
+    ## no need; the clone command does this!
     ## run mysqldump ----------------------------
     run_mysqldump()
     ## commit and push to repo ------------------
@@ -90,6 +90,9 @@ def shallow_clone_repo() -> None:
     git_clone_command = [
         'git',
         'clone',
+        '--branch',
+        REPO_BRANCH,
+        '--single-branch',
         '--depth=1',
         REPO_URL,
         str(REPO_DIR_PATH),
@@ -105,35 +108,34 @@ def shallow_clone_repo() -> None:
     return
 
         
-def checkout_repo_branch() -> None:
-    """ Confirms proper branch. 
-        Called by manager(). """
-    log.debug( 'starting checkout_repo__branch()' )
-    ## change to target dir ---------------------
-    os.chdir( REPO_DIR_PATH )
-    log.debug( f'cwd, ``{os.getcwd()}``' )
-    ## run git checkout -------------------------
-    git_checkout_command = [
-        'git',
-        'checkout',
-        REPO_BRANCH,
-        ]
-    log.debug( f'repo-a git_checkout_command, ``{" ".join(git_checkout_command)}``' )
-    with open(LOG_PATH, 'a') as log_file:
-        try:
-            subprocess.run(git_checkout_command, stdout=log_file)
-            log.debug( f'repo-a git_commit_command output at ``{LOG_PATH}``' )
-        except Exception as e:
-            log.exception( f'exception, ``{e}``' )
-            raise Exception( f'exception, ``{e}``' )
-    return
+# def checkout_repo_branch() -> None:
+#     """ Confirms proper branch. 
+#         Called by manager(). """
+#     log.debug( 'starting checkout_repo__branch()' )
+#     ## change to target dir ---------------------
+#     os.chdir( REPO_DIR_PATH )
+#     log.debug( f'cwd, ``{os.getcwd()}``' )
+#     ## run git checkout -------------------------
+#     git_checkout_command = [
+#         'git',
+#         'checkout',
+#         REPO_BRANCH,
+#         ]
+#     log.debug( f'repo-a git_checkout_command, ``{" ".join(git_checkout_command)}``' )
+#     with open(LOG_PATH, 'a') as log_file:
+#         try:
+#             subprocess.run(git_checkout_command, stdout=log_file)
+#             log.debug( f'repo-a git_commit_command output at ``{LOG_PATH}``' )
+#         except Exception as e:
+#             log.exception( f'exception, ``{e}``' )
+#             raise Exception( f'exception, ``{e}``' )
+#     return
 
 
 def run_mysqldump() -> None:
     """ Builds mysqldump commands, and runs them. 
         Called by manager(). """
     log.debug( 'starting run_mysqldump()' )
-    1/0
     ## build commands ---------------------------
     commands = build_commands()
     ## run mysqldump ----------------------------
