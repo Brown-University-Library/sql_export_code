@@ -43,11 +43,11 @@ log.debug( 'log set' )
 def manager():
     """ Manages flow of data from mysql to github.
         New flow:
-        - delete existing repo.
+        - delete existing repo (if it exists)
         - shallow-clone repo.
         - run mysqldump
-        - commit
-        - update permissions.
+        - commit & push
+        - re-delete existing repo -- should avoid permissions errors!
         Called by dundermain. """
     ## delete existing repo ---------------------
     delete_existing_repo()
@@ -60,6 +60,8 @@ def manager():
     ## commit and push to repo ------------------
     commit_to_repo()
     push_to_repo()
+    ## delete existing repo ---------------------
+    delete_existing_repo()
     return
     ## end def manager()
 
