@@ -161,8 +161,8 @@ def build_commands() -> dict:
         DATABASE_NAME,
     ]
     commands['inserts_together_command'] = [
-        MYSQLDUMP_COMMAND_FILEPATH,
-        f'--defaults-file={MYSQLDUMP_CONF_FILEPATH}',
+        str(MYSQLDUMP_COMMAND_FILEPATH),
+        f'--defaults-file={str(MYSQLDUMP_CONF_FILEPATH)}',
         f'--user={USERNAME}',
         f'--host={HOST}',
         '--enable-cleartext-plugin',
