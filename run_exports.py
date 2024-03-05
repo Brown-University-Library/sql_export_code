@@ -101,7 +101,7 @@ def shallow_clone_repo() -> None:
     with open(LOG_PATH, 'a') as log_file:  # for subprocess stdout capture
         try:
             subprocess.run(git_clone_command, stdout=log_file)
-            log.debug( f'repo-a git_clone_command output at ``{LOG_PATH}``' )
+            log.debug( f'repo git_clone_command output at ``{LOG_PATH}``' )
         except Exception as e:
             log.exception( f'exception, ``{e}``' )
             raise Exception( f'exception, ``{e}``' )
@@ -121,11 +121,11 @@ def shallow_clone_repo() -> None:
 #         'checkout',
 #         REPO_BRANCH,
 #         ]
-#     log.debug( f'repo-a git_checkout_command, ``{" ".join(git_checkout_command)}``' )
+#     log.debug( f'repo git_checkout_command, ``{" ".join(git_checkout_command)}``' )
 #     with open(LOG_PATH, 'a') as log_file:
 #         try:
 #             subprocess.run(git_checkout_command, stdout=log_file)
-#             log.debug( f'repo-a git_commit_command output at ``{LOG_PATH}``' )
+#             log.debug( f'repo git_commit_command output at ``{LOG_PATH}``' )
 #         except Exception as e:
 #             log.exception( f'exception, ``{e}``' )
 #             raise Exception( f'exception, ``{e}``' )
@@ -204,11 +204,11 @@ def commit_to_repo() -> None:
         '-am',
         'updates sql from scripted mysqldump',
         ]
-    log.debug( f'repo-a git_commit_command, ``{" ".join(git_commit_command)}``' )
+    log.debug( f'repo git_commit_command, ``{" ".join(git_commit_command)}``' )
     with open(LOG_PATH, 'a') as log_file:
         try:
             subprocess.run(git_commit_command, stdout=log_file)
-            log.debug( f'repo-a git_commit_command output at ``{LOG_PATH}``' )
+            log.debug( f'repo git_commit_command output at ``{LOG_PATH}``' )
         except Exception as e:
             msg = f'exception, ``{e}``'
             log.exception( msg )
@@ -235,7 +235,7 @@ def push_to_repo() -> None:
     with open(LOG_PATH, 'a') as log_file:
         try:
             subprocess.run(git_push_command, stdout=log_file)
-            log.debug( f'repo-A  git_push_command output at ``{LOG_PATH}``' )
+            log.debug( f'repo git_push_command output at ``{LOG_PATH}``' )
         except Exception as e:
             msg = f'exception, ``{e}``'
             log.exception( msg )
