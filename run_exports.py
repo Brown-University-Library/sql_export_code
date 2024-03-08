@@ -146,6 +146,7 @@ def run_mysqldump() -> None:
     return
 
 
+## adding the --events and --routines flags for testing
 def build_commands() -> dict:
     """ Builds two commands.
         Puts each command in a dict, for ease of reference and clarity.
@@ -159,6 +160,8 @@ def build_commands() -> dict:
         '--enable-cleartext-plugin',
         '--skip-lock-tables',
         '--no-tablespaces',
+        '--events',
+        '--routines',
         '--skip-extended-insert',  # key difference between two commands
         DATABASE_NAME,
     ]
@@ -170,10 +173,42 @@ def build_commands() -> dict:
         '--enable-cleartext-plugin',
         '--skip-lock-tables',
         '--no-tablespaces',
+        '--events',
+        '--routines',
         DATABASE_NAME,
     ]
     log.debug( f'commands, ``{commands}``' )
     return commands
+
+
+# def build_commands() -> dict:
+#     """ Builds two commands.
+#         Puts each command in a dict, for ease of reference and clarity.
+#         Called by run_mysqldump(). """
+#     commands = {}
+#     commands['inserts_separate_command'] = [
+#         str(MYSQLDUMP_COMMAND_FILEPATH),
+#         f'--defaults-file={str(MYSQLDUMP_CONF_FILEPATH)}',
+#         f'--user={USERNAME}',
+#         f'--host={HOST}',
+#         '--enable-cleartext-plugin',
+#         '--skip-lock-tables',
+#         '--no-tablespaces',
+#         '--skip-extended-insert',  # key difference between two commands
+#         DATABASE_NAME,
+#     ]
+#     commands['inserts_together_command'] = [
+#         str(MYSQLDUMP_COMMAND_FILEPATH),
+#         f'--defaults-file={str(MYSQLDUMP_CONF_FILEPATH)}',
+#         f'--user={USERNAME}',
+#         f'--host={HOST}',
+#         '--enable-cleartext-plugin',
+#         '--skip-lock-tables',
+#         '--no-tablespaces',
+#         DATABASE_NAME,
+#     ]
+#     log.debug( f'commands, ``{commands}``' )
+#     return commands
 
 
 def initiate_mysql_dump( mysqldump_command: list, output_filepath: pathlib.Path ) -> None:
